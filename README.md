@@ -81,11 +81,10 @@ Example `config.json` for Tuya based single power outlet:
             "localKey": "2XXXXXXXXXXXXXXX5",
             "dps" : 1
         }
-   ]
+    ]
 
 
-
-This was originally derived from the [homebridge-tuya-outlet] (https://github.com/codetheweb/tuya-outlet) plugin and modified to utilize the 'dps' in the Tuya api for managing multiple devices. 
+This was originally derived from the [homebridge-tuya-outlet] (https://github.com/codetheweb/homebridge-tuya-outlet) plugin and modified to utilize the 'dps' in the Tuya api for managing multiple devices. 
 
 Carefully read and review the procedures to obtain the Tuya api device ID (hint: it has the MAC address in it) and the localKey. It's quite a procedure, but it's easy once learned: https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md
 
