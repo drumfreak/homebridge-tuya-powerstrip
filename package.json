@@ -1,0 +1,23 @@
+{
+  "name": "homebridge-tuya-powerstrip",
+  "version": "1.0",
+  "description": "Tuya Powerstrip plugin for remote power strips with multiple outlets",
+  "license": "ISC",
+  "keywords": [
+    "homebridge-plugin",
+    "tuya",
+    "power strpp",
+    "outlets"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/drumfreak/homebridge-tuya-powerstrip.git"
+  },
+  "bugs": {
+    "url": "http://github.com/drumfreak/homebridge-tuya-powerstrip/issues"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  }
+}
