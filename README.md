@@ -12,9 +12,13 @@ Example `config.json` for power strip with 4 outlets and USB:
             "ip": "192.168.104.8",
             "devId": "0XXXXXXXXXXXXXXXX8",
             "localKey": "2XXXXXXXXXXXXXXX5",
-            "dps" : 1,
-            "debugPrefix" : "~~~~~~~~~~~~~~~~~~~~~ ",
-            "debug" : true
+            "apiMinTimeout" : 0,
+            "apiMaxTimeout" : 200,
+            "apiRetries": 0,
+            "apiDebug" : false,
+            "debugPrefix" : "~!~ ",
+            "debug" : false,
+            "deviceEnabled" : true
         },
 
         {
@@ -25,8 +29,13 @@ Example `config.json` for power strip with 4 outlets and USB:
             "devId": "0XXXXXXXXXXXXXXXX8",
             "localKey": "2XXXXXXXXXXXXXXX5",
             "dps" : 2,
-            "debugPrefix" : "~~~~~~~~~~~~~~~~~~~~~ ",
-            "debug" : true
+            "apiMinTimeout" : 0,
+            "apiMaxTimeout" : 200,
+            "apiRetries": 0,
+            "apiDebug" : false,
+            "debugPrefix" : "~!~ ",
+            "debug" : false,
+            "deviceEnabled" : true
         },
 
         {
@@ -37,8 +46,13 @@ Example `config.json` for power strip with 4 outlets and USB:
             "devId": "0XXXXXXXXXXXXXXXX8",
             "localKey": "2XXXXXXXXXXXXXXX5",
             "dps" : 3,
-            "debugPrefix" : "~~~~~~~~~~~~~~~~~~~~~ ",
-            "debug" : true
+            "apiMinTimeout" : 0,
+            "apiMaxTimeout" : 200,
+            "apiRetries": 0,
+            "apiDebug" : false,
+            "debugPrefix" : "~!~ ",
+            "debug" : false,
+            "deviceEnabled" : true
         },
 
         {
@@ -49,8 +63,13 @@ Example `config.json` for power strip with 4 outlets and USB:
             "devId": "0XXXXXXXXXXXXXXXX8",
             "localKey": "2XXXXXXXXXXXXXXX5",
             "dps" : 4,
-            "debugPrefix" : "~~~~~~~~~~~~~~~~~~~~~ ",
-            "debug" : true
+            "apiMinTimeout" : 0,
+            "apiMaxTimeout" : 200,
+            "apiRetries": 0,
+            "apiDebug" : false,
+            "debugPrefix" : "~!~ ",
+            "debug" : false,
+            "deviceEnabled" : true
         },
 
         {
@@ -61,8 +80,13 @@ Example `config.json` for power strip with 4 outlets and USB:
             "devId": "0XXXXXXXXXXXXXXXX8",
             "localKey": "2XXXXXXXXXXXXXXX5",
             "dps" : 5,
-            "debugPrefix" : "~~~~~~~~~~~~~~~~~~~~~ ",
-            "debug" : true
+            "apiMinTimeout" : 0,
+            "apiMaxTimeout" : 200,
+            "apiRetries": 0,
+            "apiDebug" : false,
+            "debugPrefix" : "~!~ ",
+            "debug" : false,
+            "deviceEnabled" : true
         },
 
         {
@@ -73,8 +97,13 @@ Example `config.json` for power strip with 4 outlets and USB:
             "devId": "0XXXXXXXXXXXXXXXX8",
             "localKey": "2XXXXXXXXXXXXXXX5",
             "dps" : 6,
-            "debugPrefix" : "~~~~~~~~~~~~~~~~~~~~~ ",
-            "debug" : true
+            "apiMinTimeout" : 0,
+            "apiMaxTimeout" : 200,
+            "apiRetries": 0,
+            "apiDebug" : false,
+            "debugPrefix" : "~!~ ",
+            "debug" : false,
+            "deviceEnabled" : true
         }
     ]
 
@@ -92,8 +121,13 @@ Example `config.json` for Tuya based single power outlet:
             "devId": "0XXXXXXXXXXXXXXXX8",
             "localKey": "2XXXXXXXXXXXXXXX5",
             "dps" : 1,
-            "debugPrefix" : "~~~~~~~~~~~~~~~~~~~~~ ",
-            "debug" : true
+            "apiMinTimeout" : 0,
+            "apiMaxTimeout" : 200,
+            "apiRetries": 0,
+            "apiDebug" : false,
+            "debugPrefix" : "~!~ ",
+            "debug" : false,
+            "deviceEnabled" : true
         }
     ]
 
