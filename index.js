@@ -40,10 +40,6 @@ function TuyaPowerStrip(log, config) {
     this.debugger('Tuya API Settings - Retries: ' + this.apiRetries + ' Debug: ' + this.apiDebug + ' Min Timeout: ' + this.apiMinTimeout + ' Max Timeout: ' + this.apiMaxTimeout, this.log);
   }
 
-  this.services = this.getServices();
-
-  this.updateOutlet(); // Possible heartbeat later?
-
 }
 
 TuyaPowerStrip.prototype.getServices = function() {
@@ -66,25 +62,6 @@ TuyaPowerStrip.prototype.getServices = function() {
 }
 
 // Initial update, or an alternative heartbeat of some sort...
-TuyaPowerStrip.prototype.updateOutlet = function() {
-  this._getOn(function(error, results) {
-    if(results) {
-      this.services[1].setCharacteristic(Characteristic.On, results); // bool
-      if(this.debug) {
-        this.debugger('OUTLET ON STATUS IS: ' + results);
-        this.debugger('OUTLET Characteristics: ' + JSON.stringify(this.services[1].characteristics, null, 10));
-      } else {
-        this.log.info('Updated outlet power status to: ' + results);
-      }
-      return {};
-    } else {
-      this.services[1].setCharacteristic(Characteristic.On, false); // bool
-      return {};
-    }
-    // TODO: how the fuck do you update the homekit Characteristic.on app from here?
-  }.bind(this));
-};
-
 
 TuyaPowerStrip.prototype._getOn = function(callback) {
 
@@ -93,7 +70,7 @@ TuyaPowerStrip.prototype._getOn = function(callback) {
     return callback('Disabled', null);
   }
 
-  this.tuyastrip.get({schema: true}).then(status => {
+  this.tuyastrip.getCB({schema: true}, function(error, status)  {
     if(this.debug) {
       this.debugger('TUYA STATUS ' + this.debugPrefix);
       this.debugger('Getting Tuya device status for ' + this.name + ' dps: ' + this.dps);
@@ -114,7 +91,8 @@ TuyaPowerStrip.prototype._getOn = function(callback) {
     }
     return callback(error, null);
   });
-}
+
+};
 
 TuyaPowerStrip.prototype._setOn = function(on, callback) {
   if(this.deviceEnabled === false) {
