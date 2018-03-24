@@ -11,9 +11,9 @@ module.exports = function(homebridge) {
 function TuyaPowerStrip(log, config) {
   this.log = log;
   this.name = config.name;
+  this.config = config;
   this.debugPrefix = config.debugPrefix || '~~~   ';
   const debug = require('debug')('[Tuya Powerstrip - ' + this.name + ']  ');
-  this.config = config;
 
   this.log.prefix = 'Tuya Powerstrip - ' + this.name;
   this.debugging = config.debug || false;
@@ -32,10 +32,10 @@ function TuyaPowerStrip(log, config) {
 
   if (config.ip != undefined  && this.deviceEnabled === true) {
     this.tuyaDebug('Tuya Powerstrip Outlet ' + this.dps + ' Ip is defined as ' + config.ip);
-    this.tuyastrip = new tuya(this, {type: 'outlet', ip: config.ip, id: config.devId, key: config.localKey, name: this.name, apiRetries: this.apiRetries, apiMinTimeout: this.apiMinTimeout, apiMaxTimeout: this.apiMaxTimeout, apiDebug: this.apiDebug, apiDebugPrefix: this.debugPrefix});
+    this.tuyastrip = new tuya({type: 'outlet', ip: config.ip, id: config.devId, key: config.localKey, name: this.name, apiRetries: this.apiRetries, apiMinTimeout: this.apiMinTimeout, apiMaxTimeout: this.apiMaxTimeout, apiDebug: this.apiDebug, apiDebugPrefix: this.debugPrefix});
   } else if(this.deviceEnabled === true) {
     this.tuyaDebug('Tuya Powerstrip Outlet ' + this.dps + ' ' + this.name + ' IP is undefined, resolving Ids and this usually does not work, so set a static IP for your powerstrip and add it to the config...');
-    this.tuyastrip = new tuya(this, {type: 'outlet', id: config.devId, key: config.localKey, name: this.name, apiRetries: this.apiRetries, apiMinTimeout: this.apiMinTimeout, apiMaxTimeout: this.apiMaxTimeout, apiDebug: this.apiDebug, apiDebugPrefix: this.debugPrefix});
+    this.tuyastrip = new tuya({type: 'outlet', id: config.devId, key: config.localKey, name: this.name, apiRetries: this.apiRetries, apiMinTimeout: this.apiMinTimeout, apiMaxTimeout: this.apiMaxTimeout, apiDebug: this.apiDebug, apiDebugPrefix: this.debugPrefix});
     this.tuyastrip.resolveIds();
   }
 

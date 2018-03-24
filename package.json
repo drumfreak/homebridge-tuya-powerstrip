@@ -1,6 +1,6 @@
 {
   "name": "homebridge-tuya-powerstrip",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Tuya powerstrip control for homebridge. Based on codetheweb's Tuya API and tuya outlet plugins. ",
   "main": "index.js",
   "scripts": {
@@ -11,12 +11,13 @@
     "url": "git+https://github.com/drumfreak/homebridge-tuya-powerstrip.git"
   },
   "keywords": [
+    "homebridge-plugin",
     "tuya",
     "outlet",
     "powerstrip",
-    "homebridge-plugin",
     "homebridge",
-    "jinvoo"
+    "jinvoo",
+    "smarthome"
   ],
   "author": "Eric Rosebrock <webfreakeric@gmail.com> (https://github.com/drumfreak)",
   "license": "MIT",
@@ -30,6 +31,6 @@
   },
   "dependencies": {
     "debug": "^3.1.0",
-    "homebridge-tuyapi-extended": ">=1.0.8"
+    "homebridge-tuyapi-extended": "^1.0.9"
   }
 }
