@@ -13,14 +13,17 @@ function TuyaPowerStrip(log, config) {
   this.name = config.name;
   this.debugPrefix = config.debugPrefix || '~~~   ';
   const debug = require('debug')('[Tuya Powerstrip - ' + this.name + ']  ');
+  this.config = config;
 
-  // this.debugPrefix += this.name + '   ';
   this.log.prefix = 'Tuya Powerstrip - ' + this.name;
-  this.debug = config.debug || false;
+  this.debugging = config.debug || false;
   this.deviceEnabled = (typeof config.deviceEnabled === 'undefined') ? true : config.deviceEnabled;
 
   this.dps = (config.dps === undefined) ? 1 : config.dps;
   this.devId = config.devId;
+  this.powerState = false;
+
+  this.refreshInterval = (config.refreshInterval !== undefined) ? config.refreshInterval : 60;  // Seconds
 
   this.apiMinTimeout = (config.apiMinTimeout === undefined) ? 100 : config.apiMinTimeout;
   this.apiMaxTimeout = (config.apiMaxTimeout  === undefined) ? 2000 : config.apiMaxTimeout;
@@ -28,27 +31,116 @@ function TuyaPowerStrip(log, config) {
   this.apiDebug = config.apiDebug || false;
 
   if (config.ip != undefined  && this.deviceEnabled === true) {
-    this.debugger('Tuya Powerstrip Outlet ' + this.dps + ' Ip is defined as ' + config.ip);
-    this.tuyastrip = new tuya({type: 'outlet', ip: config.ip, id: config.devId, key: config.localKey, name: this.name, apiRetries: this.apiRetries, apiMinTimeout: this.apiMinTimeout, apiMaxTimeout: this.apiMaxTimeout, apiDebug: this.apiDebug, apiDebugPrefix: this.debugPrefix}, log);
+    this.tuyaDebug('Tuya Powerstrip Outlet ' + this.dps + ' Ip is defined as ' + config.ip);
+    this.tuyastrip = new tuya(this, {type: 'outlet', ip: config.ip, id: config.devId, key: config.localKey, name: this.name, apiRetries: this.apiRetries, apiMinTimeout: this.apiMinTimeout, apiMaxTimeout: this.apiMaxTimeout, apiDebug: this.apiDebug, apiDebugPrefix: this.debugPrefix});
   } else if(this.deviceEnabled === true) {
-    this.debugger('Tuya Powerstrip Outlet ' + this.dps + ' ' + this.name + ' IP is undefined, resolving Ids and this usually does not work, so set a static IP for your powerstrip and add it to the config...');
-    this.tuyastrip = new tuya({type: 'outlet', id: config.devId, key: config.localKey, name: this.name, apiRetries: this.apiRetries, apiMinTimeout: this.apiMinTimeout, apiMaxTimeout: this.apiMaxTimeout, apiDebug: this.apiDebug, apiDebugPrefix: this.debugPrefix}, log);
+    this.tuyaDebug('Tuya Powerstrip Outlet ' + this.dps + ' ' + this.name + ' IP is undefined, resolving Ids and this usually does not work, so set a static IP for your powerstrip and add it to the config...');
+    this.tuyastrip = new tuya(this, {type: 'outlet', id: config.devId, key: config.localKey, name: this.name, apiRetries: this.apiRetries, apiMinTimeout: this.apiMinTimeout, apiMaxTimeout: this.apiMaxTimeout, apiDebug: this.apiDebug, apiDebugPrefix: this.debugPrefix});
     this.tuyastrip.resolveIds();
   }
 
-  if(this.debug && this.apiDebug && this.deviceEnabled === true) {
-    this.debugger('Tuya API Settings - Retries: ' + this.apiRetries + ' Debug: ' + this.apiDebug + ' Min Timeout: ' + this.apiMinTimeout + ' Max Timeout: ' + this.apiMaxTimeout, this.log);
+  if(this.debugging && this.apiDebug && this.deviceEnabled === true) {
+    this.tuyaDebug('Tuya API Settings - Retries: ' + this.apiRetries + ' Debug: ' + this.apiDebug + ' Min Timeout: ' + this.apiMinTimeout + ' Max Timeout: ' + this.apiMaxTimeout, this.log);
   }
 
-  this.services = this.getServices();
-
-  this.updateOutlet(); // Possible heartbeat later?
-
+  setInterval(this.devicePolling.bind(this), this.refreshInterval * 1000);
 }
 
+
+
+TuyaPowerStrip.prototype.getOn = function(callback) {
+
+  if(this.deviceEnabled === false) {
+    this.log.warn('Device is disabled... Bailing out... ');
+    return callback('Disabled');
+  }
+
+  this.tuyastrip.get(this, {schema: true}).then(status => {
+    if(this.debugging) {
+      this.tuyaDebug('TUYA STATUS ' + this.debugPrefix);
+      this.tuyaDebug('Getting Tuya device status for ' + this.name + ' dps: ' + this.dps);
+      this.tuyaDebug('Power state is: ' + this.dps + ' is ' + status.dps[this.dps]);
+      this.tuyaDebug('END TUYA STATUS ' + this.debugPrefix);
+    } else {
+      this.log.info('Retrieved outlet power status as: ' + status.dps[this.dps]);
+    }
+    this.powerState =  status.dps[this.dps];
+    return callback(null, status.dps[this.dps]);
+  }).catch(error => {
+    if(this.debugging) {
+      this.tuyaDebug('TUYA GET OUTLET ERROR ' + this.debugPrefix);
+      this.tuyaDebug('Got Tuya device error for ' + this.name + ' dps: ' + this.dps);
+      this.tuyaDebug(error.message);
+      this.tuyaDebug('END TUYA GET OUTLET ERROR ' + this.debugPrefix);
+    } else {
+      this.log.warn(error.message);
+    }
+    this.powerState = false;
+    return callback(error, null);
+  });
+}
+
+TuyaPowerStrip.prototype.setOn = function(on, callback) {
+  if(this.deviceEnabled === false) {
+    this.log.warn('Device is disabled... Bailing out...');
+    return callback('Disabled');
+  }
+
+  var dpsTmp = {};
+  dpsTmp[this.dps.toString()] = on;
+
+  // TODO: Skip if the light is already on...
+  this.tuyastrip.set(this, {'id': this.devId, 'dps' : dpsTmp}).then(result => {
+    if(this.debugging) {
+      this.tuyaDebug('TUYA SET OUTLET ' + this.debugPrefix);
+      this.tuyaDebug('Setting ' + this.name + ' dps: ' + this.dps + ' device to: ' + on);
+      this.tuyaDebug('END TUYA SET OUTLET ' + this.debugPrefix);
+    } else {
+      this.log('Outlet Power set to: ' + on);
+    }
+    this.powerState = on;
+    return callback(null, on);
+  }).catch(error => {
+    if(this.debugging) {
+      this.tuyaDebug('TUYA SET OUTLET ERROR ' + this.debugPrefix);
+      this.tuyaDebug('Got Tuya device error for ' + this.name + ' dps: ' + this.dps);
+      this.tuyaDebug(error.message);
+      this.tuyaDebug('END TUYA SET OUTLET ERROR ' + this.debugPrefix);
+    } else {
+      this.log.warn(error.message);
+    }
+    this.powerState = false;
+    return callback(error, null);
+  });
+}
+
+
+// MARK: - Polling
+
+TuyaPowerStrip.prototype.devicePolling = function() {
+
+  this.log('Polling at interval... ' + this.refreshInterval + ' seconds');
+
+  this.getOn(function(error, result) {
+    if(error) {
+      this.tuyaDebug('Error getting outlet status');
+    }
+  }.bind(this));
+
+  if(this.config.superDebug) {
+    this.tuyaDebug(JSON.stringify(this, null, 8));
+  }
+
+};
+
+
+
 TuyaPowerStrip.prototype.getServices = function() {
+  this.devicePolling();
 
    // Setup the HAP service
+  this.tuyaDebug('Calling getServices()');
+
   var informationService = new Service.AccessoryInformation();
 
   informationService
@@ -59,99 +151,21 @@ TuyaPowerStrip.prototype.getServices = function() {
   var outletService = new Service.Outlet(this.name);
 
   outletService.getCharacteristic(Characteristic.On)
-        .on('set', this._setOn.bind(this))
-        .on('get', this._getOn.bind(this));
+        .on('get', this.getOn.bind(this))
+        .on('set', this.setOn.bind(this));
 
   return [informationService, outletService];
 }
 
-// Initial update, or an alternative heartbeat of some sort...
-TuyaPowerStrip.prototype.updateOutlet = function() {
-  this._getOn(function(error, results) {
-    if(results) {
-      this.services[1].setCharacteristic(Characteristic.On, results); // bool
-      if(this.debug) {
-        this.debugger('OUTLET ON STATUS IS: ' + results);
-        this.debugger('OUTLET Characteristics: ' + JSON.stringify(this.services[1].characteristics, null, 10));
-      } else {
-        this.log.info('Updated outlet power status to: ' + results);
-      }
-      return {};
-    } else {
-      this.services[1].setCharacteristic(Characteristic.On, false); // bool
-      return {};
-    }
-    // TODO: how the fuck do you update the homekit Characteristic.on app from here?
-  }.bind(this));
-};
 
 
-TuyaPowerStrip.prototype._getOn = function(callback) {
-
-  if(this.deviceEnabled === false) {
-    this.log.warn('Device is disabled... Bailing out... ');
-    return callback('Disabled', null);
-  }
-
-  this.tuyastrip.get({schema: true}).then(status => {
-    if(this.debug) {
-      this.debugger('TUYA STATUS ' + this.debugPrefix);
-      this.debugger('Getting Tuya device status for ' + this.name + ' dps: ' + this.dps);
-      this.debugger('Power state is: ' + status.dps[this.dps]);
-      this.debugger('END TUYA STATUS ' + this.debugPrefix);
-    } else {
-      this.log.info('Retrieved outlet power status as: ' + status.dps[this.dps]);
-    }
-    return callback(null, status.dps[this.dps]);
-  }).catch(error => {
-    if(this.debug) {
-      this.debugger('TUYA GET OUTLET ERROR ' + this.debugPrefix);
-      this.debugger('Got Tuya device error for ' + this.name + ' dps: ' + this.dps);
-      this.debugger(error.message);
-      this.debugger('END TUYA GET OUTLET ERROR ' + this.debugPrefix);
-    } else {
-      this.log.warn(error.message);
-    }
-    return callback(error, null);
-  });
-}
-
-TuyaPowerStrip.prototype._setOn = function(on, callback) {
-  if(this.deviceEnabled === false) {
-    this.log.warn('Device is disabled... Bailing out...');
-    return callback('Disabled', null);
-  }
-
-  this.tuyastrip.set({'id': this.devId, set: on, 'dps' : this.dps}).then(() => {
-    if(this.debug) {
-      this.debugger('TUYA SET OUTLET ' + this.debugPrefix);
-      this.debugger('Setting ' + this.name + ' dps: ' + this.dps + ' device to: ' + on);
-      this.debugger('END TUYA SET OUTLET ' + this.debugPrefix);
-    } else {
-      this.log('Outlet Power set to: ' + on);
-    }
-    return callback(null, on);
-  }).catch(error => {
-    if(this.debug) {
-      this.debugger('TUYA SET OUTLET ERROR ' + this.debugPrefix);
-      this.debugger('Got Tuya device error for ' + this.name + ' dps: ' + this.dps);
-      this.debugger(error.message);
-      this.debugger('END TUYA SET OUTLET ERROR ' + this.debugPrefix);
-    } else {
-      this.log.warn(error.message);
-    }
-    return callback(error, null);
-  });
-}
-
-
-TuyaPowerStrip.prototype.debugger = function(args) {
-  if(this.debug === true) {
+TuyaPowerStrip.prototype.tuyaDebug = function(args) {
+  if(this.debugging === true) {
       this.log.debug(this.debugPrefix, args);
   }
 };
 
 TuyaPowerStrip.prototype.identify = function (callback) {
-  this.debugger(_this.config.name + " was identified.");
+  this.tuyaDebug(this.name + " was identified.");
   callback();
 };
