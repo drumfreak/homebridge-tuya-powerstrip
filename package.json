@@ -1,6 +1,6 @@
 {
   "name": "homebridge-tuya-powerstrip",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Tuya powerstrip control for homebridge. Based on codetheweb's Tuya API and tuya outlet plugins. ",
   "main": "index.js",
   "scripts": {
